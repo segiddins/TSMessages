@@ -32,17 +32,19 @@
 
 - (void)setBlurTintColor:(UIColor *)blurTintColor
 {
-    if ([self.toolbar respondsToSelector:@selector(setBarTintColor:)]) {
+    if (self.isBlurred && [self.toolbar respondsToSelector:@selector(setBarTintColor:)]) {
         [self.toolbar performSelector:@selector(setBarTintColor:) withObject:blurTintColor];
+    } else {
+        self.toolbar.backgroundColor = blurTintColor;
     }
 }
 
 - (UIColor *)blurTintColor
 {
-    if ([self.toolbar respondsToSelector:@selector(barTintColor)]) {
+    if (self.isBlurred && [self.toolbar respondsToSelector:@selector(barTintColor)]) {
         return [self.toolbar performSelector:@selector(barTintColor:)];
     }
-    return nil;
+    return self.toolbar.backgroundColor;
 }
 
 @end

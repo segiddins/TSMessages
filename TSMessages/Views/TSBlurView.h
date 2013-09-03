@@ -12,4 +12,6 @@
 
 @property (nonatomic, strong) UIColor *blurTintColor;
 
+@property (nonatomic, assign, getter = isBlurred) BOOL blurred;
+
 @end

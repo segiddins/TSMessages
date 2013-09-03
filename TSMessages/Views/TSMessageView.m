@@ -12,7 +12,7 @@
 #import "TSMessage.h"
 
 
-#define TSMessageViewPadding 15.0
+#define TSMessageViewPadding 13.0
 
 #define TSDesignFileName @"TSMessagesDefaultDesign.json"
 
@@ -75,9 +75,11 @@ static NSMutableDictionary *_notificationDesign;
 + (void)addNotificationDesignFromFile:(NSString *)filename
 {
     NSString *path = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:filename];
+    NSError *error;
     NSDictionary *design = [NSJSONSerialization JSONObjectWithData:[NSData dataWithContentsOfFile:path]
                                                           options:kNilOptions
-                                                            error:nil];
+                                                            error:&error];
+    if (error) NSLog(@"Error adding design named %@ to TSMessages:\n%@", filename, error);
     
     [[TSMessageView notificationDesign] addEntriesFromDictionary:design];
 }
@@ -154,10 +156,17 @@ static NSMutableDictionary *_notificationDesign;
             self.backgroundImageView.autoresizingMask = (UIViewAutoresizingFlexibleWidth);
             [self addSubview:self.backgroundImageView];
         }
+        else if (current[@"blurred"] && ![current[@"blurred"] boolValue])
+        {
+            _backgroundImageView = [[UIImageView alloc] init];
+            self.backgroundImageView.backgroundColor = [UIColor colorWithHexString:current[@"backgroundColor"]];
+            [self addSubview:self.backgroundImageView];
+        }
         else
         {
             // On iOS 7 and above use a blur layer instead (not yet finished)
             _backgroundBlurView = [[TSBlurView alloc] init];
+            self.backgroundBlurView.blurred = YES;
             self.backgroundBlurView.autoresizingMask = (UIViewAutoresizingFlexibleWidth);
             self.backgroundBlurView.blurTintColor = [UIColor colorWithHexString:current[@"backgroundColor"]];
             [self addSubview:self.backgroundBlurView];
@@ -168,7 +177,7 @@ static NSMutableDictionary *_notificationDesign;
         
         
         self.textSpaceLeft = 2 * TSMessageViewPadding;
-        if (image) self.textSpaceLeft += image.size.width + 2 * TSMessageViewPadding;
+        if (image) self.textSpaceLeft = image.size.width + 2 * TSMessageViewPadding + 10;
         
         // Set up title label
         _titleLabel = [[UILabel alloc] init];
@@ -220,8 +229,8 @@ static NSMutableDictionary *_notificationDesign;
         if (image)
         {
             _iconImageView = [[UIImageView alloc] initWithImage:image];
-            self.iconImageView.frame = CGRectMake(TSMessageViewPadding * 2,
-                                                  TSMessageViewPadding,
+            self.iconImageView.frame = CGRectMake(10+TSMessageViewPadding,
+                                                  0,
                                                   image.size.width,
                                                   image.size.height);
             [self addSubview:self.iconImageView];
@@ -372,7 +381,7 @@ static NSMutableDictionary *_notificationDesign;
         {
             // z-align
             self.iconImageView.center = CGPointMake([self.iconImageView center].x,
-                                                    round(currentHeight / 2.0));
+                                                    self.titleLabel.center.y);
         }
     }
     
